@@ -8,6 +8,7 @@ export default function Home() {
   const [coCreateWalletCreated, setCoCreateWalletCreated] = useState(false);
   const [coCreateWalletAddress, setCoCreateWalletAddress] = useState("");
   const [coCreateWalletCreating, setCoCreateWalletCreating] = useState(false);
+  const [coCreateWalletLoading, setCoCreateWalletLoading] = useState(false);
 
   const { authToken, handleLogOut, user, isAuthenticated, setShowAuthFlow } =
     useDynamicContext();
@@ -20,6 +21,7 @@ export default function Home() {
 
   useEffect(() => {
     const getUser = async () => {
+      setCoCreateWalletLoading(true);
       try {
         const response = await axios.get("/api/get_user", {
           headers: { Authorization: `Bearer ${authToken}` },
@@ -36,6 +38,7 @@ export default function Home() {
           console.error(error);
         }
       }
+      setCoCreateWalletLoading(false);
     };
 
     if (isAuthenticated) {
@@ -127,6 +130,8 @@ export default function Home() {
                   Log Out
                 </Button>
               </HStack>
+              ((coCreateWalletCreating || coCreateWalletLoading) ?{" "}
+              <Text>Loading</Text> : (
               {coCreateWalletCreated || (
                 <Text>
                   You can now use the Co:Create API to create a user wallet 👇
@@ -146,6 +151,7 @@ export default function Home() {
                   Create Co:Create Wallet
                 </Button>
               )}
+              ))
             </>
           )}
         </VStack>
