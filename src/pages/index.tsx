@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [coCreateWalletCreated, setCoCreateWalletCreated] = useState(false);
   const [coCreateWalletAddress, setCoCreateWalletAddress] = useState("");
+  const [coCreateWalletCreating, setCoCreateWalletCreating] = useState(false);
 
   const { authToken, handleLogOut, user, isAuthenticated, setShowAuthFlow } =
     useDynamicContext();
@@ -22,7 +23,12 @@ export default function Home() {
           setCoCreateWalletCreated(true);
         }
       } catch (error) {
-        console.error(error);
+        // @ts-expect-error - error is not typed
+        if (error.response.status === 404) {
+          console.log("User not found");
+        } else {
+          console.error(error);
+        }
       }
     };
 
@@ -32,6 +38,7 @@ export default function Home() {
   }, [isAuthenticated, authToken]);
 
   const onClickCreateCoCreateWallet = async () => {
+    setCoCreateWalletCreating(true);
     try {
       const response = await axios.post(
         "/api/create_user",
@@ -47,6 +54,7 @@ export default function Home() {
     } catch (error) {
       console.error(error);
     }
+    setCoCreateWalletCreating(false);
   };
 
   return (
@@ -124,6 +132,8 @@ export default function Home() {
                 </Text>
               ) : (
                 <Button
+                  isLoading={coCreateWalletCreating}
+                  loadingText='Creating'
                   onClick={onClickCreateCoCreateWallet}
                   colorScheme='purple'
                 >

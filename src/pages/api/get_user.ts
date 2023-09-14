@@ -37,6 +37,11 @@ export default async function handler(
 
     return res.status(200).json(response.data);
   } catch (error) {
+    // @ts-expect-error error is not typed
+    if (error.response.status == 404) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
