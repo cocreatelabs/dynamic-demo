@@ -12,6 +12,12 @@ export default function Home() {
   const { authToken, handleLogOut, user, isAuthenticated, setShowAuthFlow } =
     useDynamicContext();
 
+  const logout = async () => {
+    setCoCreateWalletCreated(false);
+    setCoCreateWalletAddress("");
+    await handleLogOut();
+  };
+
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -117,7 +123,7 @@ export default function Home() {
             <>
               <HStack>
                 <Text>You have connected as {user.email} </Text>
-                <Button variant='link' colorScheme='red' onClick={handleLogOut}>
+                <Button variant='link' colorScheme='red' onClick={logout}>
                   Log Out
                 </Button>
               </HStack>
