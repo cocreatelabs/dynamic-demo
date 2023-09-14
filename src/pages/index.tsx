@@ -185,7 +185,14 @@ export default function Home() {
             >
               Co:Create
             </Link>{" "}
-            for Wallet Generation
+            for Wallet Generation. All the code for this demo can be found{" "}
+            <Link
+              target='_blank'
+              textDecoration='underline'
+              href='https://github.com/cocreatelabs/dynamic-demo'
+            >
+              here
+            </Link>
           </Text>
           {!isAuthenticated && (
             <Text mt={5}>Get Started by logging in with your email 👇</Text>
