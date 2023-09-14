@@ -1,8 +1,81 @@
-import { Button, Center, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import {
+  Button,
+  Center,
+  HStack,
+  Link,
+  Spinner,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { useDynamicContext } from "@dynamic-labs/sdk-react";
 import axios from "axios";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+
+// @ts-expect-error no type info
+const UserInformation = ({ user, logout }) => (
+  <HStack>
+    <Text>You have logged in as {user.email} </Text>
+    <Button variant='link' colorScheme='red' onClick={logout}>
+      Log Out
+    </Button>
+  </HStack>
+);
+
+const WalletCreationMessage = ({
+  coCreateWalletLoading,
+  coCreateWalletCreated,
+}: {
+  coCreateWalletLoading: boolean;
+  coCreateWalletCreated: boolean;
+}) =>
+  !coCreateWalletCreated &&
+  !coCreateWalletLoading && (
+    <Text>You can now use the Co:Create API to create a user wallet 👇</Text>
+  );
+
+const WalletAddress = ({
+  coCreateWalletLoading,
+  coCreateWalletCreated,
+  coCreateWalletAddress,
+}: {
+  coCreateWalletLoading: boolean;
+  coCreateWalletCreated: boolean;
+  coCreateWalletAddress: string;
+}) =>
+  coCreateWalletCreated &&
+  !coCreateWalletLoading && (
+    <Text>Your Co:Create wallet address is: {coCreateWalletAddress}</Text>
+  );
+
+const WalletCreationButton = ({
+  coCreateWalletCreated,
+  coCreateWalletCreating,
+  onClickCreateCoCreateWallet,
+  coCreateWalletLoading,
+}: {
+  coCreateWalletCreated: boolean;
+  coCreateWalletCreating: boolean;
+  onClickCreateCoCreateWallet: () => void;
+  coCreateWalletLoading: boolean;
+}) =>
+  !coCreateWalletCreated &&
+  !coCreateWalletLoading && (
+    <Button
+      isLoading={coCreateWalletCreating}
+      loadingText='Creating'
+      onClick={onClickCreateCoCreateWallet}
+      colorScheme='purple'
+    >
+      Create Co:Create Wallet
+    </Button>
+  );
+
+const LoadingSpinner = ({
+  coCreateWalletLoading,
+}: {
+  coCreateWalletLoading: boolean;
+}) => coCreateWalletLoading && <Spinner size='xl' />;
 
 export default function Home() {
   const [coCreateWalletCreated, setCoCreateWalletCreated] = useState(false);
@@ -124,34 +197,23 @@ export default function Home() {
           )}
           {user && (
             <>
-              <HStack>
-                <Text>You have connected as {user.email} </Text>
-                <Button variant='link' colorScheme='red' onClick={logout}>
-                  Log Out
-                </Button>
-              </HStack>
-              ((coCreateWalletCreating || coCreateWalletLoading) ?{" "}
-              <Text>Loading</Text> : (
-              {coCreateWalletCreated || (
-                <Text>
-                  You can now use the Co:Create API to create a user wallet 👇
-                </Text>
-              )}
-              {coCreateWalletCreated ? (
-                <Text>
-                  Your Co:Create wallet address is: {coCreateWalletAddress}
-                </Text>
-              ) : (
-                <Button
-                  isLoading={coCreateWalletCreating}
-                  loadingText='Creating'
-                  onClick={onClickCreateCoCreateWallet}
-                  colorScheme='purple'
-                >
-                  Create Co:Create Wallet
-                </Button>
-              )}
-              ))
+              <UserInformation user={user} logout={logout} />
+              <WalletCreationMessage
+                coCreateWalletCreated={coCreateWalletCreated}
+                coCreateWalletLoading={coCreateWalletLoading}
+              />
+              <WalletAddress
+                coCreateWalletCreated={coCreateWalletCreated}
+                coCreateWalletAddress={coCreateWalletAddress}
+                coCreateWalletLoading={coCreateWalletLoading}
+              />
+              <WalletCreationButton
+                coCreateWalletCreated={coCreateWalletCreated}
+                coCreateWalletCreating={coCreateWalletCreating}
+                coCreateWalletLoading={coCreateWalletLoading}
+                onClickCreateCoCreateWallet={onClickCreateCoCreateWallet}
+              />
+              <LoadingSpinner coCreateWalletLoading={coCreateWalletLoading} />
             </>
           )}
         </VStack>
