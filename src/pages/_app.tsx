@@ -8,6 +8,11 @@ export default function App({ Component, pageProps }: AppProps) {
     <DynamicContextProvider
       settings={{
         environmentId: "05e15542-756d-4376-999c-4389e442f9b5",
+        eventsCallbacks: {
+          onAuthSuccess: async (args) => {
+            console.log("onAuthSuccess was called", args);
+          },
+        },
       }}
     >
       <ChakraProvider>

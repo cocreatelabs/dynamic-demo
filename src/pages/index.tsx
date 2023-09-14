@@ -1,18 +1,53 @@
-import {
-  Button,
-  Center,
-  Flex,
-  HStack,
-  Link,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Button, Center, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import { useDynamicContext } from "@dynamic-labs/sdk-react";
+import axios from "axios";
 import Head from "next/head";
-import { useDynamicContext, DynamicWidget } from "@dynamic-labs/sdk-react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { handleLogOut, user, isAuthenticated, setShowAuthFlow } =
+  const [coCreateWalletCreated, setCoCreateWalletCreated] = useState(false);
+  const [coCreateWalletAddress, setCoCreateWalletAddress] = useState("");
+
+  const { authToken, handleLogOut, user, isAuthenticated, setShowAuthFlow } =
     useDynamicContext();
+
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const response = await axios.get("/api/get_user", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (response.status === 200) {
+          setCoCreateWalletAddress(response.data.data.cocreate_wallet_address);
+          setCoCreateWalletCreated(true);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (isAuthenticated) {
+      getUser();
+    }
+  }, [isAuthenticated, authToken]);
+
+  const onClickCreateCoCreateWallet = async () => {
+    try {
+      const response = await axios.post(
+        "/api/create_user",
+        {},
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
+      if (response.status === 200) {
+        setCoCreateWalletAddress(response.data.data.cocreate_wallet_address);
+        setCoCreateWalletCreated(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -71,12 +106,31 @@ export default function Home() {
             </Button>
           )}
           {user && (
-            <HStack>
-              <Text>You have connected as {user.email} </Text>
-              <Button variant='link' colorScheme='red' onClick={handleLogOut}>
-                Log Out
-              </Button>
-            </HStack>
+            <>
+              <HStack>
+                <Text>You have connected as {user.email} </Text>
+                <Button variant='link' colorScheme='red' onClick={handleLogOut}>
+                  Log Out
+                </Button>
+              </HStack>
+              {coCreateWalletCreated || (
+                <Text>
+                  You can now use the Co:Create API to create a user wallet 👇
+                </Text>
+              )}
+              {coCreateWalletCreated ? (
+                <Text>
+                  Your Co:Create wallet address is: {coCreateWalletAddress}
+                </Text>
+              ) : (
+                <Button
+                  onClick={onClickCreateCoCreateWallet}
+                  colorScheme='purple'
+                >
+                  Create Co:Create Wallet
+                </Button>
+              )}
+            </>
           )}
         </VStack>
       </main>
