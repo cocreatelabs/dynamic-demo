@@ -20,8 +20,10 @@ export default async function handler(
   try {
     const decoded = authenticateJWT(token);
 
-    // Check if decoded is an object and has an email property
-    if (!(typeof decoded === "object" && "email" in decoded)) {
+    // Check if decoded is an object and has an email property and a sub property
+    const isDecodedValid =
+      typeof decoded === "object" && "email" in decoded && "sub" in decoded;
+    if (!isDecodedValid) {
       return res.status(400).json({ error: "Invalid token" });
     }
     // Make a request to the CoCreate API to create a user
@@ -40,6 +42,43 @@ export default async function handler(
     // Rest of your code...
     const response = await axios.request(options);
 
+    console.log(
+      "Co:Create Create Response",
+      JSON.stringify(response.data, null, 2)
+    );
+
+    console.log(
+      "CoCreate Wallet address and Dynamic User Id",
+      response.data.data.cocreate_wallet_address,
+      decoded.sub
+    );
+
+    const dynamicOptions = {
+      method: "POST",
+      url: `https://app.dynamicauth.com/api/v0/users/${decoded.sub}/wallets`,
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        Authorization: `Bearer ${process.env.DYNAMIC_API_KEY}`,
+      },
+      data: {
+        chain: "EVM",
+        publicWalletAddress: response.data.data.cocreate_wallet_address,
+        walletName: "Co:Create Wallet",
+        walletProvider: "custodialService",
+      },
+    };
+
+    try {
+      const dynamicResponse = await axios.request(dynamicOptions);
+      console.log(
+        `Successfully associated Co:Create wallet with Dynamic user id ${decoded.sub}`,
+        JSON.stringify(dynamicResponse.data, null, 2)
+      );
+    } catch (error) {
+      console.error("Error creating wallet on Dynamic");
+      console.error(JSON.stringify(error, null, 2));
+    }
     return res.status(200).json(response.data);
   } catch (error) {
     console.error(error);
